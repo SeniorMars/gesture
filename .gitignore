@@ -128,3 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/
+
+#We dont want to upload videos to the repo
+*.mp4
+*.avi
+*.mkv
+*.m4v

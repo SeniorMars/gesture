@@ -1,19 +1,36 @@
 import numpy as np
 import cv2
 
-#Open webcam stream
-stream = cv2.VideoCapture(0)
-backSub = cv2.createBackgroundSubtractorKNN()
-while(True):
+
+def showInMovedWindow(winname, img, x, y):
+    cv2.namedWindow(winname)
+    cv2.moveWindow(winname, x, y)
+    cv2.imshow(winname, img)
+
+# Open webcam stream
+stream = cv2.VideoCapture("test_1.mp4")
+while True:
     # Capture frame from stream
     ret, frame = stream.read()
-    mask = backSub.apply(frame)
-    cv2.dilate(mask,(3,3))
-
+    showInMovedWindow("original", frame, 0, 0)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    showInMovedWindow("Hue", frame[:, :, 0], 600, 0)
+    showInMovedWindow("Saturation", frame[:, :, 1], 1200, 0)
+    showInMovedWindow("Value", frame[:, :, 2], 1800, 0)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
+    frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+    frame = cv2.morphologyEx(frame, cv2.MORPH_OPEN, kernel)
+    kernel = np.ones((3, 3), np.uint8)
+    sat = frame[:, :, 1]
+    sat = cv2.erode(sat, kernel, iterations=3)
+    #(_, sat) = cv2.threshold(sat, 300, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    sat = cv2.dilate(sat, kernel, iterations=3)
+    mask = cv2.bitwise_and(sat, frame[:, :, 2], mask=sat)
     # Show frame
-    cv2.imshow('frame',mask)
-    #Quit if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    showInMovedWindow("proc_frame", sat, 0, 600)
+    showInMovedWindow("mask", mask, 0, 1200)
+    # Quit if 'q' is pressed
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 # Cleanup
