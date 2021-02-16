@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
 import numpy as np
-import cv2
-
+from cv2 import cv2
 
 def showInMovedWindow(winname, img, x, y):
     cv2.namedWindow(winname)
     cv2.moveWindow(winname, x, y)
     cv2.imshow(winname, img)
+
 
 # Open webcam stream
 stream = cv2.VideoCapture("test_1.mp4")
@@ -23,7 +24,7 @@ while True:
     kernel = np.ones((3, 3), np.uint8)
     sat = frame[:, :, 1]
     sat = cv2.erode(sat, kernel, iterations=3)
-    #(_, sat) = cv2.threshold(sat, 300, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    # (_, sat) = cv2.threshold(sat, 300, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     sat = cv2.dilate(sat, kernel, iterations=3)
     mask = cv2.bitwise_and(sat, frame[:, :, 2], mask=sat)
     # Show frame
