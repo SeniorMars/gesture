@@ -2,6 +2,7 @@
 import numpy as np
 from cv2 import cv2
 
+
 def showInMovedWindow(winname, img, x, y):
     cv2.namedWindow(winname)
     cv2.moveWindow(winname, x, y)
@@ -9,7 +10,7 @@ def showInMovedWindow(winname, img, x, y):
 
 
 # Open webcam stream
-stream = cv2.VideoCapture("test_1.mp4")
+stream = cv2.VideoCapture(0)
 while True:
     # Capture frame from stream
     ret, frame = stream.read()
