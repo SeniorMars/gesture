@@ -7,15 +7,13 @@ import h5py
 import tkinter as tk
 from PIL import Image, ImageTk
 
-recorded= np.ndarray((0,21,3))
+recorded = np.ndarray((0, 21, 3))
+
 
 def toggleRecording():
-    global recording, recordStatus, gestureType, recordType, startStopButton
+    global recording, startStopButton
     recording = not recording
-    recordStatus.config(text="Recording: " + str(recording))
     if recording:
-        gestureType = recordType.get("1.0",'end') #The gesture labeled within the tkinter
-        print(gestureType)
         startStopButton.config(text="Stop Recording")
     else:
         startStopButton.config(text="Start Recording")
@@ -46,7 +44,7 @@ def show_frame():
             for i in hand_landmarks.ListFields()[0][1]:
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), wrist)))
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-        recorded = np.append(recorded,hand)
+        recorded = np.append(recorded, hand)
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
@@ -63,19 +61,17 @@ imgFrame = tk.Frame(window, width=600, height=600)
 imgFrame.grid(row=0, column=0, padx=10, pady=2)
 lmain = tk.Label(imgFrame)
 lmain.grid(row=0, column=0)
+
+# Control Panel Setup
+ctrlPanel = tk.Frame(window)
+ctrlPanel.grid(row=1, column=0)
+
 # Recording buttons interface
 recording = False
-recordStatus = tk.Label(window, text="Recording: " + str(recording))
-recordStatus.grid(row=0, column=1)
-gestureType = None
-recordType = tk.Text(window, height=2, width=20, bg='light blue')
-recordType.insert('end',"Gesture Name Here")
-recordType.grid(row=2, column=1)
-startStopButton = tk.Button(window, text="Start Recording", command=toggleRecording)
-startStopButton.grid(row=1, column=1)
-# Slider window (slider controls stage position)
-sliderFrame = tk.Frame(window, width=600, height=100)
-sliderFrame.grid(row=600, column=0, padx=10, pady=2)
+gestureEntryLabel = tk.Label(ctrlPanel, text="Gesture Name:").grid(row=0, column=0)
+gestureNameEntry = tk.Entry(ctrlPanel).grid(row=0, column=1, padx=10)
+startStopButton = tk.Button(ctrlPanel, text="Start Recording", command=toggleRecording)
+startStopButton.grid(row=0, column=2, padx=10)
 
 # Setup MediaPipe Hands
 mp_drawing = mp.solutions.drawing_utils
