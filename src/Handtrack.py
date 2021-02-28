@@ -7,6 +7,7 @@ import h5py
 import tkinter as tk
 from PIL import Image, ImageTk
 
+recorded= np.ndarray((0,21,3))
 
 def toggleRecording():
     global recording, recordStatus, startStopButton
@@ -19,7 +20,7 @@ def toggleRecording():
 
 
 def show_frame():
-    global cap
+    global cap, recorded
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -43,6 +44,7 @@ def show_frame():
             for i in hand_landmarks.ListFields()[0][1]:
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), wrist)))
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+        recorded = np.append(recorded,hand)
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
