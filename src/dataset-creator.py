@@ -10,10 +10,12 @@ from PIL import Image, ImageTk
 recorded= np.ndarray((0,21,3))
 
 def toggleRecording():
-    global recording, recordStatus, startStopButton
+    global recording, recordStatus, gestureType, recordType, startStopButton
     recording = not recording
     recordStatus.config(text="Recording: " + str(recording))
     if recording:
+        gestureType = recordType.get("1.0",'end') #The gesture labeled within the tkinter
+        print(gestureType)
         startStopButton.config(text="Stop Recording")
     else:
         startStopButton.config(text="Start Recording")
@@ -65,6 +67,10 @@ lmain.grid(row=0, column=0)
 recording = False
 recordStatus = tk.Label(window, text="Recording: " + str(recording))
 recordStatus.grid(row=0, column=1)
+gestureType = None
+recordType = tk.Text(window, height=2, width=20, bg='light blue')
+recordType.insert('end',"Gesture Name Here")
+recordType.grid(row=2, column=1)
 startStopButton = tk.Button(window, text="Start Recording", command=toggleRecording)
 startStopButton.grid(row=1, column=1)
 # Slider window (slider controls stage position)
@@ -75,7 +81,7 @@ sliderFrame.grid(row=600, column=0, padx=10, pady=2)
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    min_detection_confidence=0.7, min_tracking_confidence=0.5, max_num_hands=1
+    min_detection_confidence=0.68, min_tracking_confidence=0.5, max_num_hands=1
 )
 
 cap = cv2.VideoCapture(0)
