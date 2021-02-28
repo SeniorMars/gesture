@@ -1,26 +1,35 @@
 import numpy as np
 from cv2 import cv2
 import mediapipe as mp
+from os.path import exists
 
 import h5py
 
 import tkinter as tk
 from PIL import Image, ImageTk
 
+if not exists('gestures.hdf5'): f = h5py.File('gestures.hdf5', 'x')
+else: f = h5py.File('gestures.hdf5', 'r+')
+current_dataset = None
 recorded = np.ndarray((0, 21, 3))
 
-
 def toggleRecording():
-    global recording, startStopButton
+    global recording, startStopButton, current_dataset
     recording = not recording
     if recording:
         startStopButton.config(text="Stop Recording")
+        #Open up the corresponding data set for the gesture type
+        gestureType = gestureNameEntry.get()
+        if "/"+gestureType+"/ds1" not in f:
+            current_dataset = f.create_dataset('/'+gestureType+'/ds1', (0,21,3), maxshape=(None,21,3), dtype='float64')
+        else:
+            current_dataset = f[gestureType]['ds1']
     else:
         startStopButton.config(text="Start Recording")
 
 
 def show_frame():
-    global cap, recorded
+    global cap, recorded, current_dataset
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -45,6 +54,11 @@ def show_frame():
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), wrist)))
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         recorded = np.append(recorded, hand)
+        if recording:
+            #Add Data to H5PY file then extend its size
+            current_dataset.resize((current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
+            current_dataset[current_dataset.shape[0]-1,:,:] = np.array(hand)
+
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
@@ -69,7 +83,8 @@ ctrlPanel.grid(row=1, column=0)
 # Recording buttons interface
 recording = False
 gestureEntryLabel = tk.Label(ctrlPanel, text="Gesture Name:").grid(row=0, column=0)
-gestureNameEntry = tk.Entry(ctrlPanel).grid(row=0, column=1, padx=10)
+gestureNameEntry = tk.Entry(ctrlPanel)
+gestureNameEntry.grid(row=0, column=1, padx=10)
 startStopButton = tk.Button(ctrlPanel, text="Start Recording", command=toggleRecording)
 startStopButton.grid(row=0, column=2, padx=10)
 
