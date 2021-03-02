@@ -11,7 +11,6 @@ from PIL import Image, ImageTk
 if not exists('gestures.hdf5'): f = h5py.File('gestures.hdf5', 'x')
 else: f = h5py.File('gestures.hdf5', 'r+')
 current_dataset = None
-recorded = np.ndarray((0, 21, 3))
 
 def toggleRecording():
     global recording, startStopButton, current_dataset
@@ -29,7 +28,7 @@ def toggleRecording():
 
 
 def show_frame():
-    global cap, recorded, current_dataset
+    global cap, current_dataset
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -53,7 +52,6 @@ def show_frame():
             for i in hand_landmarks.ListFields()[0][1]:
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), wrist)))
             mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-        recorded = np.append(recorded, hand)
         if recording:
             #Add Data to H5PY file then extend its size
             current_dataset.resize((current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
