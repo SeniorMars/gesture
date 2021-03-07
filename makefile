@@ -1,2 +1,2 @@
 run:
-	python3 src/Handtrack.py
+	python3 src/dataset_creator.py
