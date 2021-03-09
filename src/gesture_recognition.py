@@ -3,7 +3,7 @@ import h5py
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from tensorflow.keras.layers import Dense, Flatten, Dropout
+from tensorflow.keras.layers import Dense, Flatten, Dropout, Conv2D
 
 batch_size=128
 epochs=150
@@ -31,7 +31,7 @@ model = tf.keras.models.Sequential([
     Dense(64, activation='relu'),
     Dense(64, activation='relu'),
     Dropout(0.2),
-    Dense(classes)
+    Dense(classes, activation='softmax')
 ])
 model.build()
 model.compile(optimizer='adam',
@@ -40,3 +40,6 @@ model.compile(optimizer='adam',
 model.summary()
 
 model.fit(x_train,y_train,batch_size=batch_size,epochs=epochs,validation_split=0.1)
+
+print(model.evaluate(x_test, y_test))
+model.save("static_gestures_v1")
