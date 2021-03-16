@@ -4,16 +4,18 @@ import mediapipe as mp
 from os.path import exists
 import tensorflow as tf
 physical_devices = tf.config.list_physical_devices('GPU') 
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
 import h5py
 
 import tkinter as tk
 from PIL import Image, ImageTk
 
-if not exists('gestures.hdf5'):
-    f = h5py.File('gestures.hdf5', 'x')
+filename = 'dgestures.hdf5'
+if not exists(filename):
+    f = h5py.File(filename, 'x')
 else:
-    f = h5py.File('gestures.hdf5', 'r+')
+    f = h5py.File(filename, 'r+')
 current_dataset = None
 
 model = tf.keras.models.load_model('test_model_1')
@@ -22,8 +24,9 @@ model_labels = ["five_finger", "four_finger", "ok",
 
 
 def toggleRecording():
-    global recording, startStopButton, current_dataset
+    global recording, startStopButton, current_dataset, framesRemaining
     recording = not recording
+    framesRemaining = 20
     if recording:
         startStopButton.config(text="Stop Recording")
         # Open up the corresponding data set for the gesture type
@@ -38,7 +41,7 @@ def toggleRecording():
 
 
 def show_frame():
-    global cap, current_dataset, predictionString
+    global cap, current_dataset, predictionString, framesRemaining
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -53,6 +56,7 @@ def show_frame():
     results = hands.process(image)
     # Draw the hand annotations on the image.
     image.flags.writeable = True
+    
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if results.multi_hand_landmarks:
         wrist = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST]
@@ -64,6 +68,8 @@ def show_frame():
             mp_drawing.draw_landmarks(
                 image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         if recording:
+            if isChecked.get() and framesRemaining<=0: toggleRecording()
+            framesRemaining -= 1
             # Add Data to H5PY file then extend its size
             current_dataset.resize(
                 (current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
@@ -101,6 +107,7 @@ startStopButton = tk.Button(
     ctrlPanel, text="Start Recording", command=toggleRecording)
 startStopButton.grid(row=0, column=2, padx=10)
 isChecked = tk.BooleanVar()
+framesRemaining = 20
 isOverTime = tk.Checkbutton(
     ctrlPanel, text='Dynamic?', variable=isChecked, onvalue=True, offvalue=False)
 isOverTime.grid(row=0, column=3, padx=10)
