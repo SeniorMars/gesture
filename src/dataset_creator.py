@@ -3,6 +3,8 @@ from cv2 import cv2
 import mediapipe as mp
 from os.path import exists
 import tensorflow as tf
+physical_devices = tf.config.list_physical_devices('GPU') 
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 import h5py
 
 import tkinter as tk
@@ -66,9 +68,8 @@ def show_frame():
             current_dataset.resize(
                 (current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
             current_dataset[current_dataset.shape[0]-1, :, :] = np.array(hand)
-        prediction = model_labels[np.argmax(
-            model.predict(np.array(hand)[None, :]))]
-        predictionString.set("Current Guess: " + prediction)
+        prediction = model.predict(np.array(hand)[None, :])
+        predictionString.set("Current Guess: " + model_labels[np.argmax(prediction)] + " " + str(np.round(np.max(prediction)*100, decimals=2))+"%")
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
@@ -99,19 +100,25 @@ gestureNameEntry.grid(row=0, column=1, padx=10)
 startStopButton = tk.Button(
     ctrlPanel, text="Start Recording", command=toggleRecording)
 startStopButton.grid(row=0, column=2, padx=10)
+isChecked = tk.BooleanVar()
+isOverTime = tk.Checkbutton(
+    ctrlPanel, text='Dynamic?', variable=isChecked, onvalue=True, offvalue=False)
+isOverTime.grid(row=0, column=3, padx=10)
+
 predictionString = tk.StringVar()
 predictionString.set("No Guess.")
 currentLabel = tk.Label(ctrlPanel, textvariable=predictionString)
-currentLabel.grid(row=0, column=3)
+currentLabel.grid(row=0, column=4)
 
 # Setup MediaPipe Hands
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    min_detection_confidence=0.68, min_tracking_confidence=0.5, max_num_hands=1
+    min_detection_confidence=0.5, min_tracking_confidence=0.75, max_num_hands=1
 )
 
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FPS, 20)
 show_frame()
 window.mainloop()
 hands.close()
