@@ -2,25 +2,33 @@ import numpy as np
 from cv2 import cv2
 import mediapipe as mp
 from os.path import exists
-
+import tensorflow as tf
 import h5py
 
 import tkinter as tk
 from PIL import Image, ImageTk
 
-if not exists('gestures.hdf5'): f = h5py.File('gestures.hdf5', 'x')
-else: f = h5py.File('gestures.hdf5', 'r+')
+if not exists('gestures.hdf5'):
+    f = h5py.File('gestures.hdf5', 'x')
+else:
+    f = h5py.File('gestures.hdf5', 'r+')
 current_dataset = None
+
+model = tf.keras.models.load_model('test_model_1')
+model_labels = ["five_finger", "four_finger", "ok",
+                "one_finger", "three_finger", "two_finger"]
+
 
 def toggleRecording():
     global recording, startStopButton, current_dataset
     recording = not recording
     if recording:
         startStopButton.config(text="Stop Recording")
-        #Open up the corresponding data set for the gesture type
+        # Open up the corresponding data set for the gesture type
         gestureType = gestureNameEntry.get()
         if "/"+gestureType+"/ds1" not in f:
-            current_dataset = f.create_dataset('/'+gestureType+'/ds1', (0,21,3), maxshape=(None,21,3), dtype='float64')
+            current_dataset = f.create_dataset(
+                '/'+gestureType+'/ds1', (0, 21, 3), maxshape=(None, 21, 3), dtype='float64')
         else:
             current_dataset = f[gestureType]['ds1']
     else:
@@ -28,7 +36,7 @@ def toggleRecording():
 
 
 def show_frame():
-    global cap, current_dataset
+    global cap, current_dataset, predictionString
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -51,12 +59,16 @@ def show_frame():
         for hand_landmarks in results.multi_hand_landmarks:
             for i in hand_landmarks.ListFields()[0][1]:
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), wrist)))
-            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            mp_drawing.draw_landmarks(
+                image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         if recording:
-            #Add Data to H5PY file then extend its size
-            current_dataset.resize((current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
-            current_dataset[current_dataset.shape[0]-1,:,:] = np.array(hand)
-
+            # Add Data to H5PY file then extend its size
+            current_dataset.resize(
+                (current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2]))
+            current_dataset[current_dataset.shape[0]-1, :, :] = np.array(hand)
+        prediction = model_labels[np.argmax(
+            model.predict(np.array(hand)[None, :]))]
+        predictionString.set("Current Guess: " + prediction)
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
@@ -80,11 +92,17 @@ ctrlPanel.grid(row=1, column=0)
 
 # Recording buttons interface
 recording = False
-gestureEntryLabel = tk.Label(ctrlPanel, text="Gesture Name:").grid(row=0, column=0)
+gestureEntryLabel = tk.Label(ctrlPanel, text="Gesture Name:")
+gestureEntryLabel.grid(row=0, column=0)
 gestureNameEntry = tk.Entry(ctrlPanel)
 gestureNameEntry.grid(row=0, column=1, padx=10)
-startStopButton = tk.Button(ctrlPanel, text="Start Recording", command=toggleRecording)
+startStopButton = tk.Button(
+    ctrlPanel, text="Start Recording", command=toggleRecording)
 startStopButton.grid(row=0, column=2, padx=10)
+predictionString = tk.StringVar()
+predictionString.set("No Guess.")
+currentLabel = tk.Label(ctrlPanel, textvariable=predictionString)
+currentLabel.grid(row=0, column=3)
 
 # Setup MediaPipe Hands
 mp_drawing = mp.solutions.drawing_utils

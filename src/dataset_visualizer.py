@@ -10,7 +10,7 @@ ax.axes.set_xlim3d(left=-0.5, right=0.5)
 ax.axes.set_ylim3d(bottom=-0.5, top=0.5) 
 ax.axes.set_zlim3d(bottom=-0.5, top=0.5) 
 with h5py.File('gestures.hdf5','r') as f:
-    gesture=np.array(f['/ok/ds1/'])
+    gesture=np.array(f['/five_finger/ds1/'])
     print(gesture.shape)
     def animate(i):
         global sc
