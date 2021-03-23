@@ -112,12 +112,12 @@ startStopButton.grid(row=0, column=2, padx=10)
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    min_detection_confidence=0.5, min_tracking_confidence=0.75, max_num_hands=1
+    min_detection_confidence=0.6, min_tracking_confidence=0.75, max_num_hands=1
 )
 
 # OpenCV video stream at 20 fps.
 cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FPS, 20)
+cap.set(cv2.CAP_PROP_FPS, 20) 
 show_frame()
 window.mainloop()
 hands.close()
