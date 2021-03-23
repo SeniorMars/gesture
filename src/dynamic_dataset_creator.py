@@ -30,7 +30,7 @@ def toggleRecording():
         gestureType = gestureNameEntry.get()
         if "/"+gestureType not in f:
             current_dataset = f.create_dataset(
-                '/'+gestureType, (0, gestureLength, 21, 3), maxshape=(None, gestureLength, 21, 3), dtype='float64')
+                '/'+gestureType, (1, gestureLength, 21, 3), maxshape=(None, gestureLength, 21, 3), dtype='float64')
         else:
             current_dataset = f[gestureType]
             current_dataset.resize(
@@ -72,10 +72,10 @@ def show_frame():
         if recording:
             if framesRemaining <= 0:
                 toggleRecording()
-            framesRemaining -= 1
             # Add our data to h5 file.
             current_dataset[current_dataset.shape[0]-1,
                             gestureLength-framesRemaining, :, :] = np.array(hand)
+            framesRemaining -= 1
 
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
