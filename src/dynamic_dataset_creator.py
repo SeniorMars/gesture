@@ -5,9 +5,10 @@ import numpy as np
 from cv2 import cv2
 import mediapipe as mp
 from os.path import exists
+from time import sleep
+from keras.models import load_model
 
-
-filename = 'dynamic_gestures.hdf5'
+filename = 'dynamic_gestures2.hdf5'
 if not exists(filename):
     f = h5py.File(filename, 'x')
 else:
@@ -19,11 +20,15 @@ gestureLength = 20
 framesRemaining = gestureLength
 gestureAnchor = (0, 0, 0)
 
+# 20 Most Recent Frames
+latestFrames = []
+# Used Model
+model = load_model('test_model_1')
+model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up"]
 
 def toggleRecording():
     global recording, startStopButton, current_dataset, framesRemaining, gestureLength
     recording = not recording
-    framesRemaining = gestureLength
     if recording:
         startStopButton.config(text="Stop Recording")
         # Open up the corresponding data set for the gesture type
@@ -35,12 +40,13 @@ def toggleRecording():
             current_dataset = f[gestureType]
             current_dataset.resize(
                 (current_dataset.shape[0]+1, current_dataset.shape[1], current_dataset.shape[2], current_dataset.shape[3]))
-    else:
+    elif framesRemaining <= 0:
+        framesRemaining = gestureLength
         startStopButton.config(text="Start Recording")
 
 
 def show_frame():
-    global cap, current_dataset, framesRemaining, gestureLength, gestureAnchor
+    global cap, current_dataset, framesRemaining, gestureLength, gestureAnchor, latestFrames, predictionString, currentGesture, guessToggle
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -69,6 +75,39 @@ def show_frame():
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), gestureAnchor)))
             mp_drawing.draw_landmarks(
                 image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+        if guessToggle.get():
+            # Only collect frames if we have under gesture length
+            if hand != [] and len(latestFrames) < gestureLength:
+                latestFrames = list(latestFrames)
+                latestFrames.append(np.array(hand))
+                latestFrames = np.array(latestFrames)
+            # Remove first frame and add new frame to end then recenter everything
+            elif hand != []:
+                latestFrames = list(latestFrames)
+                latestFrames.append(np.array(hand))
+                latestFrames = np.array(latestFrames[-gestureLength:])
+                tempAnchor = [latestFrames[0][0][i] for i in range(3)]
+                for timestep in range(gestureLength):
+                    for point in range(21):
+                        for coord in range(3):
+                            latestFrames[timestep][point][coord] -= tempAnchor[coord]
+                # Used for predicting current gesture.
+                prediction = model.predict(latestFrames[None,:])
+                modelGuess = model_labels[np.argmax(prediction)]
+                predictionString.set("Current Guess: " + modelGuess + " " + str(np.round(np.max(prediction)*100, decimals=2))+"%")
+                if currentGesture != modelGuess:
+                    if currentGesture != None:
+                        print(currentGesture)
+                        currentGesture = None
+                        predictionString.set("No Gesture Detected.")
+                        latestFrames = np.array([])
+                        sleep(2)
+                    else: currentGesture = modelGuess
+        else:
+            currentGesture = None
+            predictionString.set("No Gesture Detected.")
+            latestFrames = np.array([])
+        # If collecting data, add data to dataset
         if recording:
             if framesRemaining <= 0:
                 toggleRecording()
@@ -76,7 +115,16 @@ def show_frame():
             current_dataset[current_dataset.shape[0]-1,
                             gestureLength-framesRemaining, :, :] = np.array(hand)
             framesRemaining -= 1
-
+    # Remove frames one by one as no gesture is being done
+    elif guessToggle.get():
+        predictionString.set("No Gesture Detected.")
+        latestFrames = list(latestFrames)
+        if currentGesture != None:
+                print(currentGesture)
+                currentGesture = None
+        if len(latestFrames) > 1: latestFrames = latestFrames[1:]
+        elif len(latestFrames) == 1: latestFrames = []
+        latestFrames = np.array(latestFrames)
     img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGBA))
     imgtk = ImageTk.PhotoImage(image=img)
     lmain.imgtk = imgtk
@@ -101,12 +149,23 @@ ctrlPanel.grid(row=1, column=0)
 # Recording buttons interface
 recording = False
 gestureEntryLabel = tk.Label(ctrlPanel, text="Gesture Name:")
-gestureEntryLabel.grid(row=0, column=0)
+gestureEntryLabel.grid(row=0, column=1)
 gestureNameEntry = tk.Entry(ctrlPanel)
-gestureNameEntry.grid(row=0, column=1, padx=10)
+gestureNameEntry.grid(row=0, column=2, padx=10)
 startStopButton = tk.Button(
     ctrlPanel, text="Start Recording", command=toggleRecording)
-startStopButton.grid(row=0, column=2, padx=10)
+startStopButton.grid(row=0, column=3, padx=10)
+
+# Guess of Gesture
+guessToggle = tk.IntVar() 
+currentGesture = None
+guessToggleButton = tk.Checkbutton(ctrlPanel, text="Guess?", variable=guessToggle, onvalue=True, offvalue=False)
+#guessToggleButton.pack()
+guessToggleButton.grid(row=0, column=0, padx=5)
+predictionString = tk.StringVar()
+predictionString.set("No Guess.")
+currentLabel = tk.Label(ctrlPanel, textvariable=predictionString)
+currentLabel.grid(row=0, column=4)
 
 # Setup MediaPipe Hands
 mp_drawing = mp.solutions.drawing_utils
