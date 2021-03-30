@@ -7,6 +7,7 @@ import mediapipe as mp
 from os.path import exists
 from time import sleep
 from keras.models import load_model
+from keyboard import press_and_release as press
 
 filename = 'dynamic_gestures2.hdf5'
 if not exists(filename):
@@ -25,7 +26,14 @@ latestFrames = []
 # Used Model
 model = load_model('test_model_2')
 model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up"]
-
+keys = {
+    "point up":"i",
+    "point left":'j',
+    "point down":'k',
+    "point right":'l',
+    "flick left":"b",
+    "flick right":"b"
+}
 def toggleRecording():
     global recording, startStopButton, current_dataset, framesRemaining, gestureLength
     recording = not recording
@@ -46,7 +54,7 @@ def toggleRecording():
 
 
 def show_frame():
-    global cap, current_dataset, framesRemaining, gestureLength, gestureAnchor, latestFrames, predictionString, currentGesture, guessToggle
+    global cap, current_dataset, framesRemaining, gestureLength, gestureAnchor, latestFrames, predictionString, currentGesture, guessToggle, keys 
     success, image = cap.read()
     if not success:
         print("Ignoring empty camera frame.")
@@ -97,11 +105,11 @@ def show_frame():
                 predictionString.set("Current Guess: " + modelGuess + " " + str(np.round(np.max(prediction)*100, decimals=2))+"%")
                 if currentGesture != modelGuess:
                     if currentGesture != None:
-                        print(currentGesture)
+                        press(keys[currentGesture])
                         currentGesture = None
                         predictionString.set("No Gesture Detected.")
                         latestFrames = np.array([])
-                        sleep(2)
+                        sleep(.25)
                     else: currentGesture = modelGuess
         else:
             currentGesture = None
@@ -120,7 +128,7 @@ def show_frame():
         predictionString.set("No Gesture Detected.")
         latestFrames = list(latestFrames)
         if currentGesture != None:
-                print(currentGesture)
+                press(keys[currentGesture])
                 currentGesture = None
         if len(latestFrames) > 1: latestFrames = latestFrames[1:]
         elif len(latestFrames) == 1: latestFrames = []
