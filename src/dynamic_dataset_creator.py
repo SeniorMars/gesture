@@ -23,7 +23,7 @@ gestureAnchor = (0, 0, 0)
 # 20 Most Recent Frames
 latestFrames = []
 # Used Model
-model = load_model('test_model_1')
+model = load_model('test_model_2')
 model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up"]
 
 def toggleRecording():
