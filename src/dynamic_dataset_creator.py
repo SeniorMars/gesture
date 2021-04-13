@@ -25,7 +25,7 @@ gestureAnchor = (0, 0, 0)
 latestFrames = []
 # Used Model
 model = load_model('test_model_2')
-model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up"]
+model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up", "swipe down", "swipe up", "swipe right"]
 keys = {
     "point up":"i",
     "point left":'j',
