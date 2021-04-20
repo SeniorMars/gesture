@@ -25,7 +25,8 @@ gestureAnchor = (0, 0, 0)
 latestFrames = []
 # Used Model
 model = load_model('test_model_2')
-model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up", "swipe down", "swipe up", "swipe right"]
+#model_labels = ["flick left", "flick right", "point down", "point left", "point right", "point up", "swipe down", "swipe up", "swipe right"]
+model_labels = ["swipe right","swipe left", "swipe up", "swipe down"]
 keys = {
     "point up":"i",
     "point left":'j',
@@ -103,6 +104,7 @@ def show_frame():
                 prediction = model.predict(latestFrames[None,:])
                 modelGuess = model_labels[np.argmax(prediction)]
                 predictionString.set("Current Guess: " + modelGuess + " " + str(np.round(np.max(prediction)*100, decimals=2))+"%")
+                ''' # Used for converting to keyboard inputs
                 if currentGesture != modelGuess:
                     if currentGesture != None:
                         press(keys[currentGesture])
@@ -110,7 +112,7 @@ def show_frame():
                         predictionString.set("No Gesture Detected.")
                         latestFrames = np.array([])
                         sleep(.25)
-                    else: currentGesture = modelGuess
+                    else: currentGesture = modelGuess'''
         else:
             currentGesture = None
             predictionString.set("No Gesture Detected.")
