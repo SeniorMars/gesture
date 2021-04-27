@@ -6,6 +6,9 @@ from cv2 import cv2
 import mediapipe as mp
 from os.path import exists
 from time import sleep
+import tensorflow as tf
+physical_devices = tf.config.list_physical_devices('GPU') 
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 from keras.models import load_model
 from keyboard import press_and_release as press
 
