@@ -12,7 +12,7 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 from keras.models import load_model
 from keyboard import press_and_release as press
 
-filename = 'dynamic_gestures2.hdf5'
+filename = 'dynamic_gestures2_test.hdf5'
 if not exists(filename):
     f = h5py.File(filename, 'x')
 else:
@@ -38,6 +38,17 @@ keys = {
     "flick left":"b",
     "flick right":"b"
 }
+
+def process_data(data):
+    generated = np.empty([20,1,3])
+    last = np.zeros(3)
+    for j,frame in enumerate(data):
+        d = np.array([(last-frame[0])])
+        generated[j]=d
+        last = frame[0]
+    data = np.concatenate((data,generated),axis=1)
+    return data[None,:]
+
 def toggleRecording():
     global recording, startStopButton, current_dataset, framesRemaining, gestureLength
     recording = not recording
@@ -81,30 +92,32 @@ def show_frame():
             wrist = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.WRIST]
             gestureAnchor = (wrist.x, wrist.y, wrist.z)
         hand = []
+        hand_uncentered = []
         for hand_landmarks in results.multi_hand_landmarks:
             for i in hand_landmarks.ListFields()[0][1]:
                 # Add each point to the hand array, normalized relative to the anchor.
                 hand.append(tuple(np.subtract((i.x, i.y, i.z), gestureAnchor)))
+                hand_uncentered.append((i.x,i.y,i.z))
             mp_drawing.draw_landmarks(
                 image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         if guessToggle.get():
             # Only collect frames if we have under gesture length
             if hand != [] and len(latestFrames) < gestureLength:
                 latestFrames = list(latestFrames)
-                latestFrames.append(np.array(hand))
+                latestFrames.append(hand_uncentered)
                 latestFrames = np.array(latestFrames)
             # Remove first frame and add new frame to end then recenter everything
             elif hand != []:
                 latestFrames = list(latestFrames)
-                latestFrames.append(np.array(hand))
+                latestFrames.append(hand_uncentered)
                 latestFrames = np.array(latestFrames[-gestureLength:])
                 tempAnchor = [latestFrames[0][0][i] for i in range(3)]
-                for timestep in range(gestureLength):
+                tempFrames = list(latestFrames)
+                for i in range(gestureLength):
                     for point in range(21):
-                        for coord in range(3):
-                            latestFrames[timestep][point][coord] -= tempAnchor[coord]
+                        tempFrames[i][point] = np.subtract(tempFrames[i][point],tempAnchor)
                 # Used for predicting current gesture.
-                prediction = model.predict(latestFrames[None,:])
+                prediction = model.predict(process_data(tempFrames))
                 modelGuess = model_labels[np.argmax(prediction)]
                 predictionString.set("Current Guess: " + modelGuess + " " + str(np.round(np.max(prediction)*100, decimals=2))+"%")
                 ''' # Used for converting to keyboard inputs
