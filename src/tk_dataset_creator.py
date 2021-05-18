@@ -7,6 +7,8 @@ from cv2 import cv2
 import numpy as np
 import mediapipe as mp
 
+TARGET_FRAMERATE: int = 20
+
 
 class DatasetCreator(tk.Tk):
     """
@@ -25,7 +27,7 @@ class DatasetCreator(tk.Tk):
         )
         # OpenCV setup
         self.cap = cv2.VideoCapture(0)
-        self.cap.set(cv2.CAP_PROP_FPS, 20)
+        self.cap.set(cv2.CAP_PROP_FPS, TARGET_FRAMERATE)
 
         # OpenCV current frame
         self.image = None
@@ -54,7 +56,7 @@ class DatasetCreator(tk.Tk):
         imgtk = ImageTk.PhotoImage(image=img)
         self.videoLabel.imgtk = imgtk
         self.videoLabel.configure(image=imgtk)
-        self.videoLabel.after(10, self.appLoop)
+        self.videoLabel.after(int(1000/TARGET_FRAMERATE), self.appLoop)
 
         if self.controlPanel.isRecording():
             pass
