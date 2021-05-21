@@ -6,17 +6,22 @@ class ControlPanel(tk.Frame):
     Class containing the logic for a Control Panel for the Dataset Creator.
     """
 
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, parent, toggleCommand=None, *args, **kwargs):
         # Tkinter Setup
         tk.Frame.__init__(self, parent, *args, **kwargs)
 
-        # Button setup
-        self.recordingToggle = ToggleButton(
-            self, "Start Recording", "Stop Recording")
-        self.recordingToggle.grid(row=0, column=3, padx=10)
-
+        # Widget setup
         self.shouldGuessToggle = CheckButton(self, "Guess")
         self.shouldGuessToggle.grid(row=0, column=0, padx=5)
+
+        self.gestureNameInputLabel = tk.Label(self, text="Gesture Name:")
+        self.gestureNameInputLabel.grid(row=0, column=1)
+        self.gestureNameInput = TextField(self)
+        self.gestureNameInput.grid(row=0, column=2, padx=5)
+
+        self.recordingToggle = ToggleButton(
+            self, "Start Recording", "Stop Recording", command=toggleCommand)
+        self.recordingToggle.grid(row=0, column=3, padx=10)
 
     def isRecording(self) -> bool:
         return self.recordingToggle.active
@@ -27,13 +32,16 @@ class ControlPanel(tk.Frame):
 
 class ToggleButton(tk.Button):
     """
-    Simple Toggle Button logic
+    Simple Toggle Button logic, if the function
+    in `command` is specified, it will be called
+    when the button is clicked.
     """
 
-    def __init__(self, parent, inactiveLabel: str, activeLabel: str, active: bool = False, *args, **kwargs):
+    def __init__(self, parent,  inactiveLabel: str, activeLabel: str, active: bool = False, command=None, *args, **kwargs):
         self.inactiveLabel = inactiveLabel
         self.activeLabel = activeLabel
         self.active = active
+        self.command = command
 
         # Tkinter Setup
         tk.Button.__init__(self, parent, text=self.getLabel(),
@@ -47,6 +55,8 @@ class ToggleButton(tk.Button):
     def toggle(self) -> None:
         self.active = not self.active
         self.config(text=self.getLabel())
+        if self.command:
+            self.command()
 
 
 class CheckButton(tk.Checkbutton):
@@ -62,3 +72,15 @@ class CheckButton(tk.Checkbutton):
 
     def isChecked(self) -> bool:
         return self.active.get()
+
+
+class TextField(tk.Entry):
+    """
+    Text field input.
+    """
+
+    def __init__(self, parent, *args, **kwargs):
+        tk.Entry.__init__(self, parent, *args, **kwargs)
+
+    def value(self) -> str:
+        return self.get()

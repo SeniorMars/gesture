@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from tk_control_panel import ControlPanel
-from tk_data_recorder import DataRecorder
+from tk_data_recorder import DatasetRecorder
 
 from cv2 import cv2
 import numpy as np
@@ -19,7 +19,6 @@ class DatasetCreator(tk.Tk):
         # TKinter setup
         tk.Tk.__init__(self, *args, **kwargs)
         self.wm_title("Dataset Creator")
-        self.config(background="#FFFFFF")
 
         # MediaPipe setup
         self.mp_hands = mp.solutions.hands.Hands(
@@ -38,20 +37,24 @@ class DatasetCreator(tk.Tk):
         self.videoLabel = tk.Label(self.videoFrame)
         self.videoLabel.grid(row=0, column=0)
 
-        self.controlPanel = ControlPanel(self)
+        self.controlPanel = ControlPanel(self, toggleCommand=self.onToggleClicked)
         self.controlPanel.grid(row=1, column=0)
 
         # Data Recording utility
-        self.recorder = DataRecorder("gesture_dataset.h5", 20)
+        self.recorder: DatasetRecorder = DatasetRecorder("gesture_dataset.h5", 20)
 
         # Start event loop
         self.appLoop()
+    
+    def onToggleClicked(self) -> None:
+        self.recorder.setCurrentGesture(self.controlPanel.gestureNameInput.value())
 
     def appLoop(self) -> None:
         """
         Event loop
         """
-        hand = self.fetchHand()
+        success, hand = self.fetchHand()
+        
         img = Image.fromarray(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGBA))
         imgtk = ImageTk.PhotoImage(image=img)
         self.videoLabel.imgtk = imgtk
@@ -59,7 +62,10 @@ class DatasetCreator(tk.Tk):
         self.videoLabel.after(int(1000/TARGET_FRAMERATE), self.appLoop)
 
         if self.controlPanel.isRecording():
-            pass
+            self.recorder.addFrameToSample(hand)
+            if self.recorder.currentFrame==self.recorder.sampleLength:
+                self.recorder.addSampleToDataset()
+                self.controlPanel.recordingToggle.toggle()
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
