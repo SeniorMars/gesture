@@ -53,7 +53,7 @@ class DatasetCreator(tk.Tk):
         """
         Event loop
         """
-        success, hand = self.fetchHand()
+        _, hand = self.fetchHand()
         
         img = Image.fromarray(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGBA))
         imgtk = ImageTk.PhotoImage(image=img)
