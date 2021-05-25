@@ -100,20 +100,20 @@ class DataGenerator(keras.utils.Sequence):
             data = data*np.random.uniform(0.5, 1.5)
         return data
 
-    def __data_generation(self, batch_index):
+    def __data_generation(self, batchIndex):
         X = np.ndarray((self.batchSize, *self.dim))
         y = np.zeros(self.batchSize)
         for i in range(self.batchSize):
-            index = batch_index+i
+            index = batchIndex+i
             gesture = self.idToName[self.indices[index][1]]
             sampleIndex = self.indices[index][0]
             X[i] = self.__fetch_sample(gesture, sampleIndex)
             y[i] = self.indices[index][1]
-        y = keras.utils.to_categorical(y, num_classes=self.numClasses)
+        y = keras.utils.to_categorical(y, numClasses=self.numClasses)
         return X, y
 
-    def __getitem__(self, batch_index):
-        batch_index = (batch_index * self.batchSize) % len(self.indices)
-        if batch_index+self.batchSize >= len(self.indices):
-            batch_index = len(self.indices)-self.batchSize
-        return self.__data_generation(batch_index)
+    def __getitem__(self, batchIndex):
+        batchIndex = (batchIndex * self.batchSize) % len(self.indices)
+        if batchIndex+self.batchSize >= len(self.indices):
+            batchIndex = len(self.indices)-self.batchSize
+        return self.__data_generation(batchIndex)

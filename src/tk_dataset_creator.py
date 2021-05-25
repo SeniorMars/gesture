@@ -21,7 +21,7 @@ class DatasetCreator(tk.Tk):
         self.wm_title("Dataset Creator")
 
         # MediaPipe setup
-        self.mp_hands = mp.solutions.hands.Hands(
+        self.mpHands = mp.solutions.hands.Hands(
             min_detection_confidence=0.6, min_tracking_confidence=0.75, max_num_hands=1
         )
         # OpenCV setup
@@ -67,7 +67,7 @@ class DatasetCreator(tk.Tk):
                 self.recorder.addSampleToDataset()
                 self.controlPanel.recordingToggle.toggle()
 
-    def fetchHand(self, draw_hand=True) -> tuple:
+    def fetchHand(self, drawHand=True) -> tuple:
         """
         Returns a tuple of (success, hand), where hand is
         a Hand is an array of shape (20,21,3)
@@ -84,7 +84,7 @@ class DatasetCreator(tk.Tk):
         # To improve performance, optionally mark the image as not writeable to
         # pass by reference.
         self.image.flags.writeable = False
-        results = self.mp_hands.process(self.image)
+        results = self.mpHands.process(self.image)
         # Draw the hand annotations on the image.
         self.image.flags.writeable = True
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
@@ -92,7 +92,7 @@ class DatasetCreator(tk.Tk):
             for hand_landmarks in results.multi_hand_landmarks:
                 hand = np.array([(i.x, i.y, i.z)
                                  for i in hand_landmarks.ListFields()[0][1]])
-                if draw_hand:
+                if drawHand:
                     mp.solutions.drawing_utils.draw_landmarks(
                         self.image, hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS,
                     )
