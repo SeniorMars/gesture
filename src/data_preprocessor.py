@@ -16,7 +16,8 @@ GESTURES = {
         "id": 1,
         "scale": True,
         "fliplr": False,
-        "flipud": False
+        "flipud": False,
+        "keybind": 's',
     },
     "swipe_up":
     {
@@ -24,14 +25,16 @@ GESTURES = {
         "id": 2,
         "scale": True,
         "fliplr": False,
-        "flipud": False
+        "flipud": False,
+        "keybind": 'w',
     },
     "swipe_right":
     {
         "id": 3,
         "scale": True,
         "fliplr": False,
-        "flipud": False
+        "flipud": False,
+        "keybind": 'd',
     },
     "swipe_left":
     {
@@ -39,7 +42,8 @@ GESTURES = {
         "src": "swipe_right",
         "scale": True,
         "fliplr": False,
-        "flipud": False
+        "flipud": False,
+        "keybind": 'a',
     },
     "pinch":
     {
@@ -92,7 +96,7 @@ class DataGenerator(keras.utils.Sequence):
         self.on_epoch_end()
 
     def __len__(self):
-        return int(self.totalDataAmount/self.batchSize)
+        return int(self.totalDataAmount/self.batchSize)*3
 
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
@@ -124,7 +128,7 @@ class DataGenerator(keras.utils.Sequence):
             sampleIndex = self.indices[index][0]
             X[i] = self.__fetch_sample(gesture, sampleIndex)
             y[i] = self.indices[index][1]
-        y = keras.utils.to_categorical(y, numClasses=self.numClasses)
+        y = keras.utils.to_categorical(y, num_classes=self.numClasses)
         return X, y
 
     def __getitem__(self, batchIndex):

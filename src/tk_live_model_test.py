@@ -48,14 +48,8 @@ class LiveModelTester(tk.Tk):
         self.predictionLabel.grid(row=1, column=0)
 
         self.frameCache = []
-        self.model = load_model('saved_models\MODEL-2021-05-24-21-27-14')
+        self.model = load_model('saved_models\MODEL-2021-05-25-13-18-09')
         # Start event loop
-        self.keys = {
-            "swipe_up":"w",
-            "swipe_left":'a',
-            "swipe_down":'s',
-            "swipe_right":'d'
-        }
         self.appLoop()
 
     def appLoop(self) -> None:
@@ -82,13 +76,14 @@ class LiveModelTester(tk.Tk):
             np.array(self.frameCache))[None, :]
         prediction = self.model.predict(sample)
         gestureLabel = str(list(GESTURES)[np.argmax(prediction)])
-        gestureCertainty = str(round(np.max(prediction)*100,2))
+        gestureCertainty = str(round(np.max(prediction)*100, 2))
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
         self.predictionLabel.config(text=predictionString)
-        print(gestureLabel)
-        if gestureLabel in self.keys:
-            #press(self.keys[gestureLabel])
-            self.frameCache = self.frameCache[10:]
+
+        if 'keybind' in GESTURES[gestureLabel]:
+            # press(GESTURES[gestureLabel]['keybind'])
+            # self.frameCache = self.frameCache[10:]
+            pass
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
