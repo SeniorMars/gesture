@@ -82,6 +82,9 @@ class DataGenerator(keras.utils.Sequence):
     def on_epoch_end(self):
         np.random.shuffle(self.indices)
 
+    def center_sample(sample):
+        return np.subtract(sample, sample[0][0])
+
     def __fetch_sample(self, gesture, index):
         reverse = False
         props = GESTURES[gesture]
@@ -92,7 +95,7 @@ class DataGenerator(keras.utils.Sequence):
         if reverse:
             data = np.flip(data, axis=0)
         # Center the sample on the first frame's wrist.
-        data = np.subtract(data, data[0][0])
+        data = DataGenerator.center_sample(data)
         if props["scale"]:
             data = data*np.random.uniform(0.5, 1.5)
         return data
