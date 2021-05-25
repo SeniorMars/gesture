@@ -5,7 +5,12 @@ import h5py
 
 # A dictionary detailing gesture information.
 GESTURES = {
-    "palm": {"id": 0, "scale": True, "fliplr": False, "flipud": False},
+    "palm": {
+        "id": 0,
+        "scale": True,
+        "fliplr": False,
+        "flipud": False,
+    },
     "swipe_down": {
         "id": 1,
         "scale": True,
@@ -36,10 +41,28 @@ GESTURES = {
         "flipud": False,
         "keybind": "a",
     },
-    "pinch": {"id": 5, "scale": True, "fliplr": False, "flipud": False},
+    "pinch": {
+        "id": 5,
+        "scale": True,
+        "fliplr": False,
+        "flipud": False,
+    },
     "expand": {
         "id": 6,
         "src": "pinch",
+        "scale": True,
+        "fliplr": False,
+        "flipud": False,
+    },
+    "flick_left": {
+        "id": 7,
+        "scale": True,
+        "fliplr": False,
+        "flipud": False,
+    },
+    "flick_right": {
+        "id": 8,
+        "src": "flick_left",
         "scale": True,
         "fliplr": False,
         "flipud": False,

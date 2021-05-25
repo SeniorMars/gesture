@@ -11,7 +11,7 @@ from data_preprocessor import DataGenerator, GESTURES
 import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
-TFLITE_MODEL_PATH = "saved_models\MODEL-2021-05-25-13-59-31.tflite"
+TFLITE_MODEL_PATH = "saved_models\MODEL-2021-05-25-15-22-07.tflite"
 
 
 class LiveModelTester(tk.Tk):
@@ -72,15 +72,19 @@ class LiveModelTester(tk.Tk):
     def updatePrediction(self):
         if len(self.frameCache) != 20:
             return
-        sample = np.array(DataGenerator.center_sample(
-            np.array(self.frameCache))[None, :], dtype='float32')
-        
+        sample = np.array(
+            DataGenerator.center_sample(np.array(self.frameCache))[None, :],
+            dtype="float32",
+        )
+
         self.interpreter.set_tensor(
-            self.interpreter.get_input_details()[0]['index'], sample)
+            self.interpreter.get_input_details()[0]["index"], sample
+        )
         self.interpreter.invoke()
         prediction = self.interpreter.get_tensor(
-            self.interpreter.get_output_details()[0]['index'])
-        
+            self.interpreter.get_output_details()[0]["index"]
+        )
+
         gestureLabel = str(list(GESTURES)[np.argmax(prediction)])
         gestureCertainty = str(round(np.max(prediction) * 100, 2))
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
@@ -115,8 +119,7 @@ class LiveModelTester(tk.Tk):
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 hand = np.array(
-                    [(i.x, i.y, i.z)
-                     for i in hand_landmarks.ListFields()[0][1]]
+                    [(i.x, i.y, i.z) for i in hand_landmarks.ListFields()[0][1]]
                 )
                 if draw_hand:
                     mp.solutions.drawing_utils.draw_landmarks(
