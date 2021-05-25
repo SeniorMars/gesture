@@ -10,7 +10,8 @@ from keyboard import press_and_release as press
 from data_preprocessor import DataGenerator, GESTURES
 
 import tensorflow as tf
-physicalDevices = tf.config.list_physical_devices('GPU')
+
+physicalDevices = tf.config.list_physical_devices("GPU")
 if physicalDevices:
     tf.config.experimental.set_memory_growth(physicalDevices[0], True)
 
@@ -19,7 +20,7 @@ TARGET_FRAMERATE: int = 20
 
 class LiveModelTester(tk.Tk):
     """
-    Main Window 
+    Main Window
     """
 
     def __init__(self, *args, **kwargs):
@@ -48,7 +49,7 @@ class LiveModelTester(tk.Tk):
         self.predictionLabel.grid(row=1, column=0)
 
         self.frameCache = []
-        self.model = load_model('saved_models\MODEL-2021-05-25-13-18-09')
+        self.model = load_model("saved_models\MODEL-2021-05-25-13-18-09")
         # Start event loop
         self.appLoop()
 
@@ -67,20 +68,19 @@ class LiveModelTester(tk.Tk):
         imgtk = ImageTk.PhotoImage(image=img)
         self.videoLabel.imgtk = imgtk
         self.videoLabel.configure(image=imgtk)
-        self.videoLabel.after(int(1000/TARGET_FRAMERATE), self.appLoop)
+        self.videoLabel.after(int(1000 / TARGET_FRAMERATE), self.appLoop)
 
     def updatePrediction(self):
         if len(self.frameCache) != 20:
             return
-        sample = DataGenerator.center_sample(
-            np.array(self.frameCache))[None, :]
+        sample = DataGenerator.center_sample(np.array(self.frameCache))[None, :]
         prediction = self.model.predict(sample)
         gestureLabel = str(list(GESTURES)[np.argmax(prediction)])
-        gestureCertainty = str(round(np.max(prediction)*100, 2))
+        gestureCertainty = str(round(np.max(prediction) * 100, 2))
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
         self.predictionLabel.config(text=predictionString)
 
-        if 'keybind' in GESTURES[gestureLabel]:
+        if "keybind" in GESTURES[gestureLabel]:
             # press(GESTURES[gestureLabel]['keybind'])
             # self.frameCache = self.frameCache[10:]
             pass
@@ -108,16 +108,19 @@ class LiveModelTester(tk.Tk):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-                hand = np.array([(i.x, i.y, i.z)
-                                 for i in hand_landmarks.ListFields()[0][1]])
+                hand = np.array(
+                    [(i.x, i.y, i.z) for i in hand_landmarks.ListFields()[0][1]]
+                )
                 if draw_hand:
                     mp.solutions.drawing_utils.draw_landmarks(
-                        self.image, hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS,
+                        self.image,
+                        hand_landmarks,
+                        mp.solutions.hands.HAND_CONNECTIONS,
                     )
                 return (True, hand)
         return (False, None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = LiveModelTester()
     app.mainloop()

@@ -16,7 +16,8 @@ class ControlPanel(tk.Frame):
         self.gestureNameInput.grid(row=0, column=2, padx=5)
 
         self.recordingToggle = ToggleButton(
-            self, "Start Recording", "Stop Recording", command=toggleCommand)
+            self, "Start Recording", "Stop Recording", command=toggleCommand
+        )
         self.recordingToggle.grid(row=0, column=3, padx=10)
 
     def isRecording(self) -> bool:
@@ -30,15 +31,25 @@ class ToggleButton(tk.Button):
     when the button is clicked.
     """
 
-    def __init__(self, parent,  inactiveLabel: str, activeLabel: str, active: bool = False, command=None, *args, **kwargs):
+    def __init__(
+        self,
+        parent,
+        inactiveLabel: str,
+        activeLabel: str,
+        active: bool = False,
+        command=None,
+        *args,
+        **kwargs
+    ):
         self.inactiveLabel = inactiveLabel
         self.activeLabel = activeLabel
         self.active = active
         self.command = command
 
         # Tkinter Setup
-        tk.Button.__init__(self, parent, text=self.getLabel(),
-                           command=self.toggle, *args, **kwargs)
+        tk.Button.__init__(
+            self, parent, text=self.getLabel(), command=self.toggle, *args, **kwargs
+        )
 
     def getLabel(self) -> str:
         if self.active:

@@ -12,7 +12,7 @@ TARGET_FRAMERATE: int = 20
 
 class DatasetCreator(tk.Tk):
     """
-    Main Window 
+    Main Window
     """
 
     def __init__(self, *args, **kwargs):
@@ -45,7 +45,7 @@ class DatasetCreator(tk.Tk):
 
         # Start event loop
         self.appLoop()
-    
+
     def onToggleClicked(self) -> None:
         self.recorder.setCurrentGesture(self.controlPanel.gestureNameInput.value())
 
@@ -54,16 +54,16 @@ class DatasetCreator(tk.Tk):
         Event loop
         """
         _, hand = self.fetchHand()
-        
+
         img = Image.fromarray(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGBA))
         imgtk = ImageTk.PhotoImage(image=img)
         self.videoLabel.imgtk = imgtk
         self.videoLabel.configure(image=imgtk)
-        self.videoLabel.after(int(1000/TARGET_FRAMERATE), self.appLoop)
+        self.videoLabel.after(int(1000 / TARGET_FRAMERATE), self.appLoop)
 
         if self.controlPanel.isRecording():
             self.recorder.addFrameToSample(hand)
-            if self.recorder.currentFrame==self.recorder.sampleLength:
+            if self.recorder.currentFrame == self.recorder.sampleLength:
                 self.recorder.addSampleToDataset()
                 self.controlPanel.recordingToggle.toggle()
 
@@ -90,16 +90,19 @@ class DatasetCreator(tk.Tk):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
-                hand = np.array([(i.x, i.y, i.z)
-                                 for i in hand_landmarks.ListFields()[0][1]])
+                hand = np.array(
+                    [(i.x, i.y, i.z) for i in hand_landmarks.ListFields()[0][1]]
+                )
                 if drawHand:
                     mp.solutions.drawing_utils.draw_landmarks(
-                        self.image, hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS,
+                        self.image,
+                        hand_landmarks,
+                        mp.solutions.hands.HAND_CONNECTIONS,
                     )
                 return (True, hand)
         return (False, None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = DatasetCreator()
     app.mainloop()
