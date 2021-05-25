@@ -10,10 +10,6 @@ class ControlPanel(tk.Frame):
         # Tkinter Setup
         tk.Frame.__init__(self, parent, *args, **kwargs)
 
-        # Widget setup
-        self.shouldGuessToggle = CheckButton(self, "Guess")
-        self.shouldGuessToggle.grid(row=0, column=0, padx=5)
-
         self.gestureNameInputLabel = tk.Label(self, text="Gesture Name:")
         self.gestureNameInputLabel.grid(row=0, column=1)
         self.gestureNameInput = TextField(self)
@@ -25,9 +21,6 @@ class ControlPanel(tk.Frame):
 
     def isRecording(self) -> bool:
         return self.recordingToggle.active
-
-    def isGuessing(self) -> bool:
-        return self.shouldGuessToggle.isChecked()
 
 
 class ToggleButton(tk.Button):
@@ -57,21 +50,6 @@ class ToggleButton(tk.Button):
         self.config(text=self.getLabel())
         if self.command:
             self.command()
-
-
-class CheckButton(tk.Checkbutton):
-    """
-    Toggle Button (checkmark), can only be toggled by user.
-    """
-
-    def __init__(self, parent, label: str = "", *args, **kwargs):
-        self.active = tk.IntVar()
-        # Tkinter Setup
-        tk.Checkbutton.__init__(self, parent, text=label, command=self.active,
-                                onvalue=True, offvalue=False, *args, **kwargs)
-
-    def isChecked(self) -> bool:
-        return self.active.get()
 
 
 class TextField(tk.Entry):

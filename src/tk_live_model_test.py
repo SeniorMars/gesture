@@ -47,7 +47,7 @@ class LiveModelTester(tk.Tk):
         self.predictionLabel.grid(row=1, column=0)
 
         self.frameCache = []
-        self.model = load_model('saved_models\MODEL-2021-05-24-18-38-48')
+        self.model = load_model('saved_models\MODEL-2021-05-24-21-27-14')
 
         # Start event loop
         self.appLoop()

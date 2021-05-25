@@ -41,6 +41,21 @@ GESTURES = {
         "fliplr": False,
         "flipud": False
     },
+    "pinch":
+    {
+        "id": 5,
+        "scale": True,
+        "fliplr": False,
+        "flipud": False
+    },
+    "expand":
+    {
+        "id": 6,
+        "src": "pinch",
+        "scale": True,
+        "fliplr": False,
+        "flipud": False
+    },
 }
 
 
