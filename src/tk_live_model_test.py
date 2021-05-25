@@ -5,13 +5,14 @@ from PIL import Image, ImageTk
 from cv2 import cv2
 import numpy as np
 import mediapipe as mp
+from keyboard import press_and_release as press
 
 from data_preprocessor import DataGenerator, GESTURES
 
 import tensorflow as tf
-physical_devices = tf.config.list_physical_devices('GPU')
-if len(physical_devices[0]) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+physicalDevices = tf.config.list_physical_devices('GPU')
+if physicalDevices:
+    tf.config.experimental.set_memory_growth(physicalDevices[0], True)
 
 TARGET_FRAMERATE: int = 20
 
@@ -27,8 +28,8 @@ class LiveModelTester(tk.Tk):
         self.wm_title("Gesture Recognition Tester")
 
         # MediaPipe setup
-        self.mp_hands = mp.solutions.hands.Hands(
-            min_detection_confidence=0.6, min_tracking_confidence=0.75, max_num_hands=1
+        self.mpHands = mp.solutions.hands.Hands(
+            min_detection_confidence=0.6, min_tracking_confidence=0.6, max_num_hands=1
         )
         # OpenCV setup
         self.cap = cv2.VideoCapture(0)
@@ -48,8 +49,13 @@ class LiveModelTester(tk.Tk):
 
         self.frameCache = []
         self.model = load_model('saved_models\MODEL-2021-05-24-21-27-14')
-
         # Start event loop
+        self.keys = {
+            "swipe_up":"w",
+            "swipe_left":'a',
+            "swipe_down":'s',
+            "swipe_right":'d'
+        }
         self.appLoop()
 
     def appLoop(self) -> None:
@@ -61,8 +67,7 @@ class LiveModelTester(tk.Tk):
             self.frameCache.append(hand)
             if len(self.frameCache) > 20:
                 self.frameCache.pop(0)
-
-        self.updatePrediction()
+            self.updatePrediction()
 
         img = Image.fromarray(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGBA))
         imgtk = ImageTk.PhotoImage(image=img)
@@ -80,6 +85,10 @@ class LiveModelTester(tk.Tk):
         gestureCertainty = str(round(np.max(prediction)*100,2))
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
         self.predictionLabel.config(text=predictionString)
+        print(gestureLabel)
+        if gestureLabel in self.keys:
+            #press(self.keys[gestureLabel])
+            self.frameCache = self.frameCache[10:]
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
@@ -98,7 +107,7 @@ class LiveModelTester(tk.Tk):
         # To improve performance, optionally mark the image as not writeable to
         # pass by reference.
         self.image.flags.writeable = False
-        results = self.mp_hands.process(self.image)
+        results = self.mpHands.process(self.image)
         # Draw the hand annotations on the image.
         self.image.flags.writeable = True
         self.image = cv2.cvtColor(self.image, cv2.COLOR_RGB2BGR)
