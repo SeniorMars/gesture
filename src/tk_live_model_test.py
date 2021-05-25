@@ -5,6 +5,8 @@ from cv2 import cv2
 import numpy as np
 import mediapipe as mp
 from keyboard import press_and_release as press
+from json import load 
+from time import sleep
 
 from data_preprocessor import DataGenerator, GESTURES
 
@@ -13,6 +15,10 @@ import tensorflow as tf
 TARGET_FRAMERATE: int = 20
 TFLITE_MODEL_PATH = "saved_models/MODEL-2021-05-25-15-44-54.tflite"
 
+keys = load(open("keybinds.json", "r"))
+for key in keys:
+    if key in GESTURES:
+        GESTURES[key]['keybind'] = keys[key]
 
 class LiveModelTester(tk.Tk):
     """
@@ -98,6 +104,10 @@ class LiveModelTester(tk.Tk):
 
         if "keybind" in GESTURES[gestureLabel] and self.keyboardToggle.get():
             press(GESTURES[gestureLabel]['keybind'])
+            self.frameCache = self.frameCache[5:]
+            if "ctrl+tab" in GESTURES[gestureLabel]['keybind'] or "ctrl+shift+tab" in GESTURES[gestureLabel]['keybind']:
+                sleep(.5)
+            pass
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
