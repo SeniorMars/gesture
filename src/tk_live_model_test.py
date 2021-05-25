@@ -1,4 +1,3 @@
-from keras.models import load_model
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -11,11 +10,8 @@ from data_preprocessor import DataGenerator, GESTURES
 
 import tensorflow as tf
 
-physicalDevices = tf.config.list_physical_devices("GPU")
-if physicalDevices:
-    tf.config.experimental.set_memory_growth(physicalDevices[0], True)
-
 TARGET_FRAMERATE: int = 20
+TFLITE_MODEL_PATH = "saved_models\MODEL-2021-05-25-13-59-31.tflite"
 
 
 class LiveModelTester(tk.Tk):
@@ -49,7 +45,10 @@ class LiveModelTester(tk.Tk):
         self.predictionLabel.grid(row=1, column=0)
 
         self.frameCache = []
-        self.model = load_model("saved_models\MODEL-2021-05-25-13-18-09")
+
+        self.interpreter = tf.lite.Interpreter(TFLITE_MODEL_PATH)
+        self.interpreter.allocate_tensors()
+
         # Start event loop
         self.appLoop()
 
@@ -73,8 +72,15 @@ class LiveModelTester(tk.Tk):
     def updatePrediction(self):
         if len(self.frameCache) != 20:
             return
-        sample = DataGenerator.center_sample(np.array(self.frameCache))[None, :]
-        prediction = self.model.predict(sample)
+        sample = np.array(DataGenerator.center_sample(
+            np.array(self.frameCache))[None, :], dtype='float32')
+        
+        self.interpreter.set_tensor(
+            self.interpreter.get_input_details()[0]['index'], sample)
+        self.interpreter.invoke()
+        prediction = self.interpreter.get_tensor(
+            self.interpreter.get_output_details()[0]['index'])
+        
         gestureLabel = str(list(GESTURES)[np.argmax(prediction)])
         gestureCertainty = str(round(np.max(prediction) * 100, 2))
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
@@ -109,7 +115,8 @@ class LiveModelTester(tk.Tk):
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 hand = np.array(
-                    [(i.x, i.y, i.z) for i in hand_landmarks.ListFields()[0][1]]
+                    [(i.x, i.y, i.z)
+                     for i in hand_landmarks.ListFields()[0][1]]
                 )
                 if draw_hand:
                     mp.solutions.drawing_utils.draw_landmarks(
