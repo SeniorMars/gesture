@@ -67,6 +67,12 @@ GESTURES = {
         "fliplr": False,
         "flipud": False,
     },
+    "fist": {
+        "id": 9,
+        "scale": True,
+        "fliplr": False,
+        "flipud": False,
+    },
 }
 
 

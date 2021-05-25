@@ -11,7 +11,7 @@ from data_preprocessor import DataGenerator, GESTURES
 import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
-TFLITE_MODEL_PATH = "saved_models\MODEL-2021-05-25-15-22-07.tflite"
+TFLITE_MODEL_PATH = "saved_models/MODEL-2021-05-25-15-44-54.tflite"
 
 
 class LiveModelTester(tk.Tk):
@@ -26,7 +26,7 @@ class LiveModelTester(tk.Tk):
 
         # MediaPipe setup
         self.mpHands = mp.solutions.hands.Hands(
-            min_detection_confidence=0.6, min_tracking_confidence=0.6, max_num_hands=1
+            min_detection_confidence=0.4, min_tracking_confidence=.9, max_num_hands=1
         )
         # OpenCV setup
         self.cap = cv2.VideoCapture(0)
@@ -43,6 +43,12 @@ class LiveModelTester(tk.Tk):
 
         self.predictionLabel = tk.Label(self, text="")
         self.predictionLabel.grid(row=1, column=0)
+
+        # Toggle keyboard input
+        self.keyboardToggle = tk.BooleanVar()
+        self.useKeyboardToggle = tk.Checkbutton(
+            self, text="Send Keypresses", onvalue=True, offvalue=False,variable = self.keyboardToggle)
+        self.useKeyboardToggle.grid(row=1, column=1, padx=5)
 
         self.frameCache = []
 
@@ -90,10 +96,8 @@ class LiveModelTester(tk.Tk):
         predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
         self.predictionLabel.config(text=predictionString)
 
-        if "keybind" in GESTURES[gestureLabel]:
-            # press(GESTURES[gestureLabel]['keybind'])
-            # self.frameCache = self.frameCache[10:]
-            pass
+        if "keybind" in GESTURES[gestureLabel] and self.keyboardToggle.get():
+            press(GESTURES[gestureLabel]['keybind'])
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
@@ -119,7 +123,8 @@ class LiveModelTester(tk.Tk):
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 hand = np.array(
-                    [(i.x, i.y, i.z) for i in hand_landmarks.ListFields()[0][1]]
+                    [(i.x, i.y, i.z)
+                     for i in hand_landmarks.ListFields()[0][1]]
                 )
                 if draw_hand:
                     mp.solutions.drawing_utils.draw_landmarks(
@@ -129,6 +134,7 @@ class LiveModelTester(tk.Tk):
                     )
                 return (True, hand)
         return (False, None)
+
 
 
 if __name__ == "__main__":
