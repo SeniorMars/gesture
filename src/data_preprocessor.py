@@ -16,7 +16,6 @@ GESTURES = {
         "scale": True,
         "fliplr": False,
         "flipud": False,
-        "keybind": "s",
     },
     "swipe_up": {
         "src": "swipe_down",
@@ -24,14 +23,12 @@ GESTURES = {
         "scale": True,
         "fliplr": False,
         "flipud": False,
-        "keybind": "w",
     },
     "swipe_right": {
         "id": 3,
         "scale": True,
         "fliplr": False,
         "flipud": False,
-        "keybind": "d",
     },
     "swipe_left": {
         "id": 4,
@@ -39,7 +36,6 @@ GESTURES = {
         "scale": True,
         "fliplr": False,
         "flipud": False,
-        "keybind": "a",
     },
     "pinch": {
         "id": 5,
@@ -74,7 +70,6 @@ GESTURES = {
         "flipud": False,
     },
 }
-
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self, filename, batchSize=32, dim=(20, 21, 3)):
