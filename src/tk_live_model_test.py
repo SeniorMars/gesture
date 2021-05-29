@@ -11,7 +11,7 @@ from data_preprocessor import DataGenerator, GESTURES
 import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
-TFLITE_MODEL_PATH = "saved_models/MODEL-2021-05-25-15-44-54.tflite"
+TFLITE_MODEL_PATH = "saved_models/MODEL-2021-05-29-16-14-04.tflite"
 
 
 class LiveModelTester(tk.Tk):
