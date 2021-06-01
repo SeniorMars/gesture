@@ -1,11 +1,7 @@
 {
     "example": "ctrl+shift+a,space",
-    "palm": "space",
-    "swipe_up": "w",
-    "swipe_left": "a",
-    "swipe_down": "s",
-    "swipe_right": "d",
-    "fist": "ctrl+tab",
-    "pinch": "ctrl+tab",
-    "expand": "ctrl+shift+tab"
+    "swipe_up": "up",
+    "swipe_left": "left",
+    "swipe_down": "down",
+    "swipe_right": "right"
 }

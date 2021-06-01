@@ -1,75 +1,10 @@
-import tensorflow as tf
+from gestures import GESTURES
 from tensorflow import keras
 import numpy as np
 import h5py
 
 # A dictionary detailing gesture information.
-GESTURES = {
-    "palm": {
-        "id": 0,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "swipe_down": {
-        "id": 1,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "swipe_up": {
-        "src": "swipe_down",
-        "id": 2,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "swipe_right": {
-        "id": 3,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "swipe_left": {
-        "id": 4,
-        "src": "swipe_right",
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "pinch": {
-        "id": 5,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "expand": {
-        "id": 6,
-        "src": "pinch",
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "flick_left": {
-        "id": 7,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "flick_right": {
-        "id": 8,
-        "src": "flick_left",
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-    "fist": {
-        "id": 9,
-        "scale": True,
-        "fliplr": False,
-        "flipud": False,
-    },
-}
+
 
 class DataGenerator(keras.utils.Sequence):
     def __init__(self, filename, batchSize=32, dim=(20, 21, 3)):

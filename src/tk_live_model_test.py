@@ -4,21 +4,25 @@ from PIL import Image, ImageTk
 from cv2 import cv2
 import numpy as np
 import mediapipe as mp
-from keyboard import press_and_release as press
-from json import load 
-from time import sleep
 
-from data_preprocessor import DataGenerator, GESTURES
+from keyboard import press_and_release as press
+from json import load
+
+from data_preprocessor import DataGenerator
+from gestures import GESTURES
+
 
 import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
-TFLITE_MODEL_PATH = "saved_models/MODEL-2021-05-29-16-14-04.tflite"
+GESTURE_LENGTH: int = 20
+TFLITE_MODEL_PATH: str = "saved_models/MODEL-2021-06-01-16-07-52.tflite"
 
 keys = load(open("keybinds.json", "r"))
 for key in keys:
     if key in GESTURES:
         GESTURES[key]['keybind'] = keys[key]
+
 
 class LiveModelTester(tk.Tk):
     """
@@ -53,7 +57,7 @@ class LiveModelTester(tk.Tk):
         # Toggle keyboard input
         self.keyboardToggle = tk.BooleanVar()
         self.useKeyboardToggle = tk.Checkbutton(
-            self, text="Send Keypresses", onvalue=True, offvalue=False,variable = self.keyboardToggle)
+            self, text="Send Keypresses", onvalue=True, offvalue=False, variable=self.keyboardToggle)
         self.useKeyboardToggle.grid(row=1, column=1, padx=5)
 
         self.frameCache = []
@@ -98,16 +102,15 @@ class LiveModelTester(tk.Tk):
         )
 
         gestureLabel = str(list(GESTURES)[np.argmax(prediction)])
-        gestureCertainty = str(round(np.max(prediction) * 100, 2))
-        predictionString = "{} {}%".format(gestureLabel, gestureCertainty)
+        gestureCertainty = round(np.max(prediction) * 100, 2)
+        predictionString = "{} {}%".format(gestureLabel, str(gestureCertainty))
         self.predictionLabel.config(text=predictionString)
 
-        if "keybind" in GESTURES[gestureLabel] and self.keyboardToggle.get():
-            press(GESTURES[gestureLabel]['keybind'])
-            self.frameCache = self.frameCache[5:]
-            if "ctrl+tab" in GESTURES[gestureLabel]['keybind'] or "ctrl+shift+tab" in GESTURES[gestureLabel]['keybind']:
-                sleep(.5)
-            pass
+        if self.keyboardToggle.get() and gestureCertainty > 90 and "keybind" in GESTURES[gestureLabel]:
+                press(GESTURES[gestureLabel]['keybind'])
+                print(gestureLabel)
+                # empty framecache
+                self.frameCache[15:]
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
@@ -144,7 +147,6 @@ class LiveModelTester(tk.Tk):
                     )
                 return (True, hand)
         return (False, None)
-
 
 
 if __name__ == "__main__":
