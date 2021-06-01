@@ -59,6 +59,8 @@ class DataGenerator(keras.utils.Sequence):
         data = DataGenerator.center_sample(data)
         if props["scale"]:
             data = data * np.random.uniform(0.5, 1.5)
+        if self.dim[0]==10:
+            data = data[::2]
         return data
 
     def __data_generation(self, batchIndex):

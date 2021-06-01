@@ -21,21 +21,6 @@ GESTURES = {
         "src": "swipe_right",
         "scale": True,
     },
-    "flick_left": {
-        "id": 5,
-        "scale": True,
-    },
-    "flick_right": {
-        "id": 6,
-        "src": "flick_left",
-        "scale": True,
-    },
-    "fist": {
-        "id": 7,
-        "scale": True,
-    },
-}
-"""
     "pinch": {
         "id": 5,
         "scale": True,
@@ -44,4 +29,18 @@ GESTURES = {
         "id": 6,
         "src": "pinch",
         "scale": True,
-    },"""
+    },
+    "flick_left": {
+        "id": 7,
+        "scale": True,
+    },
+    "flick_right": {
+        "id": 8,
+        "src": "flick_left",
+        "scale": True,
+    },
+    "fist": {
+        "id": 9,
+        "scale": True,
+    },
+}

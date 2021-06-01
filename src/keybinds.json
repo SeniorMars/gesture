@@ -3,5 +3,7 @@
     "swipe_up": "up",
     "swipe_left": "left",
     "swipe_down": "down",
-    "swipe_right": "right"
+    "swipe_right": "right",
+    "flick_right": "windows+right",
+    "flick_left": "windows+left"
 }

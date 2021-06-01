@@ -16,7 +16,9 @@ import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
 GESTURE_LENGTH: int = 20
-TFLITE_MODEL_PATH: str = "saved_models/MODEL-2021-06-01-16-07-52.tflite"
+TFLITE_MODEL_PATH: str = "saved_models/MODEL-2021-05-29-16-14-04.tflite"#"saved_models/SHORT-MODEL-2021-06-01-16-22-15.tflite"
+VIDEO_WIDTH = 1920
+VIDEO_HEIGHT = 1080
 
 keys = load(open("keybinds.json", "r"))
 for key in keys:
@@ -36,11 +38,13 @@ class LiveModelTester(tk.Tk):
 
         # MediaPipe setup
         self.mpHands = mp.solutions.hands.Hands(
-            min_detection_confidence=0.4, min_tracking_confidence=.9, max_num_hands=1
+            min_detection_confidence=0.6, min_tracking_confidence=.5, max_num_hands=1
         )
         # OpenCV setup
         self.cap = cv2.VideoCapture(0)
-        self.cap.set(cv2.CAP_PROP_FPS, TARGET_FRAMERATE)
+        self.cap.set(cv2.CAP_PROP_FPS, 60)
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, VIDEO_WIDTH)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, VIDEO_HEIGHT)
 
         # OpenCV current frame
         self.image = None
@@ -75,7 +79,7 @@ class LiveModelTester(tk.Tk):
         success, hand = self.fetchHand()
         if success:
             self.frameCache.append(hand)
-            if len(self.frameCache) > 20:
+            if len(self.frameCache) > GESTURE_LENGTH:
                 self.frameCache.pop(0)
             self.updatePrediction()
 
@@ -86,7 +90,7 @@ class LiveModelTester(tk.Tk):
         self.videoLabel.after(int(1000 / TARGET_FRAMERATE), self.appLoop)
 
     def updatePrediction(self):
-        if len(self.frameCache) != 20:
+        if len(self.frameCache) != GESTURE_LENGTH:
             return
         sample = np.array(
             DataGenerator.center_sample(np.array(self.frameCache))[None, :],
@@ -110,12 +114,12 @@ class LiveModelTester(tk.Tk):
                 press(GESTURES[gestureLabel]['keybind'])
                 print(gestureLabel)
                 # empty framecache
-                self.frameCache[15:]
+                self.frameCache[GESTURE_LENGTH-5:]
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
         Returns a tuple of (success, hand), where hand is
-        a Hand is an array of shape (20,21,3)
+        a Hand is an array of shape (21,3)
 
         Also sets this object's image property to a frame
         with the hand drawn on it.
