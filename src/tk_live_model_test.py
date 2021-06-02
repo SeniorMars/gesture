@@ -16,7 +16,7 @@ import tensorflow as tf
 
 TARGET_FRAMERATE: int = 20
 GESTURE_LENGTH: int = 20
-TFLITE_MODEL_PATH: str = "saved_models/MODEL-2021-05-29-16-14-04.tflite"#"saved_models/SHORT-MODEL-2021-06-01-16-22-15.tflite"
+TFLITE_MODEL_PATH: str = "saved_models/MODEL-2021-06-02-16-12-10.tflite"
 VIDEO_WIDTH = 1920
 VIDEO_HEIGHT = 1080
 
