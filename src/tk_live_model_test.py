@@ -112,7 +112,7 @@ class LiveModelTester(tk.Tk):
 
         if self.keyboardToggle.get() and gestureCertainty > 90 and "keybind" in GESTURES[gestureLabel]:
                 press(GESTURES[gestureLabel]['keybind'])
-                print(gestureLabel)
+                # print(gestureLabel)
                 # empty framecache
                 self.frameCache[GESTURE_LENGTH-5:]
 
