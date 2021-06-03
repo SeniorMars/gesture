@@ -38,7 +38,7 @@ class LiveModelTester(tk.Tk):
 
         # MediaPipe setup
         self.mpHands = mp.solutions.hands.Hands(
-            min_detection_confidence=0.6, min_tracking_confidence=.5, max_num_hands=1
+            min_detection_confidence=0.6, min_tracking_confidence=0.75, max_num_hands=1
         )
         # OpenCV setup
         self.cap = cv2.VideoCapture(0)
@@ -65,6 +65,7 @@ class LiveModelTester(tk.Tk):
         self.useKeyboardToggle.grid(row=1, column=1, padx=5)
 
         self.frameCache = []
+        self.skipFrames = 0
 
         self.interpreter = tf.lite.Interpreter(TFLITE_MODEL_PATH)
         self.interpreter.allocate_tensors()
@@ -77,11 +78,12 @@ class LiveModelTester(tk.Tk):
         Event loop
         """
         success, hand = self.fetchHand()
-        if success:
+        if success and self.skipFrames <= 0:
             self.frameCache.append(hand)
             if len(self.frameCache) > GESTURE_LENGTH:
                 self.frameCache.pop(0)
             self.updatePrediction()
+        self.skipFrames -= 1
 
         img = Image.fromarray(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGBA))
         imgtk = ImageTk.PhotoImage(image=img)
@@ -110,18 +112,19 @@ class LiveModelTester(tk.Tk):
         predictionString = "{} {}%".format(gestureLabel, str(gestureCertainty))
         self.predictionLabel.config(text=predictionString)
 
-        if self.keyboardToggle.get() and gestureCertainty > 90 and "keybind" in GESTURES[gestureLabel]:
-                press(GESTURES[gestureLabel]['keybind'])
-                # print(gestureLabel)
-                # empty framecache
-                self.frameCache[GESTURE_LENGTH-5:]
+        if self.keyboardToggle.get() and gestureCertainty > 96 and "keybind" in GESTURES[gestureLabel]:
+            press(GESTURES[gestureLabel]['keybind'])
+            # print(gestureLabel)
+            # empty framecache
+            self.frameCache = []
+            self.skipFrames = 10
 
     def fetchHand(self, draw_hand=True) -> tuple:
         """
         Returns a tuple of (success, hand), where hand is
         a Hand is an array of shape (21,3)
 
-        Also sets this object's image property to a frame
+        Also sets self.image property to a frame
         with the hand drawn on it.
         """
         success, self.image = self.cap.read()
